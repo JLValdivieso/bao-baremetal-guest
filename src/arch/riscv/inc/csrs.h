@@ -15,6 +15,7 @@
 
 #ifndef __ARCH_CSR_H__
 #define __ARCH_CSR_H__
+#include <bit.h>
 
 #define RV64   (__riscv_xlen == 64)
 #define RV32   (__riscv_xlen == 32)
@@ -33,17 +34,6 @@
     #define REGLEN  (4)
 #endif
 
-#if(RV64)
-    #define BAO_VAS_BASE    (0xffffffc000000000)
-    #define BAO_CPU_BASE    (0xffffffc040000000)
-    #define BAO_VM_BASE     (0xffffffe000000000)
-    #define BAO_VAS_TOP     (0xfffffff000000000)
-#elif(RV32)
-    #define BAO_VAS_BASE    (0xc0000000)
-    #define BAO_CPU_BASE    (0x00000000)
-    #define BAO_VM_BASE     (0x00000000)
-    #define BAO_VAS_TOP     (0xffffffff)
-#endif
 
 #define REG_RA  (1)
 #define REG_SP  (2)
@@ -149,7 +139,11 @@
 #define SCAUSE_CODE_IPF     (12)
 #define SCAUSE_CODE_LPF     (13)
 #define SCAUSE_CODE_SPF     (15)
+#define SCAUSE_CODE_CLPF    (26)
+#define SCAUSE_CODE_CSPF    (27)
+#define SCAUSE_CODE_CE      (28)
 
+#ifndef __ASSEMBLER__
 #define CSR_STR(s) #s
 
 #define CSRR(csr)                                     \
@@ -166,6 +160,6 @@
     asm volatile("csrs  " CSR_STR(csr) ", %0\n\r" ::"rK"(rs) : "memory")
 #define CSRC(csr, rs) \
     asm volatile("csrc  " CSR_STR(csr) ", %0\n\r" ::"rK"(rs) : "memory")
-
+#endif
 
 #endif /* __ARCH_CSRS_H__ */

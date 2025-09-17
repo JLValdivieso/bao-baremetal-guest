@@ -16,6 +16,46 @@ typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t  u8;
 
+#ifdef __CHERI_PURE_CAPABILITY__
+static inline void writeb(u8 val, volatile void *addr)
+{
+	asm volatile("csb %0, 0(%1)" : : "r"(val), "C"(addr));
+}
+
+static inline void writew(u16 val, volatile void *addr)
+{
+	asm volatile("csh %0, 0(%1)" : : "r"(val), "C"(addr));
+}
+
+static inline void writel(u32 val, volatile void *addr)
+{
+	asm volatile("csw %0, 0(%1)" : : "r"(val), "C"(addr));
+}
+
+static inline u8 readb(const volatile void *addr)
+{
+	u8 val;
+
+	asm volatile("clb %0, 0(%1)" : "=r"(val) : "C"(addr));
+	return val;
+}
+
+static inline u16 readw(const volatile void *addr)
+{
+	u16 val;
+
+	asm volatile("clh %0, 0(%1)" : "=r"(val) : "C"(addr));
+	return val;
+}
+
+static inline u32 readl(const volatile void *addr)
+{
+	u32 val;
+
+	asm volatile("clw %0, 0(%1)" : "=r"(val) : "C"(addr));
+	return val;
+}
+#else
 static inline void writeb(u8 val, volatile void *addr)
 {
 	asm volatile("sb %0, 0(%1)" : : "r"(val), "r"(addr));
@@ -54,6 +94,7 @@ static inline u32 readl(const volatile void *addr)
 	asm volatile("lw %0, 0(%1)" : "=r"(val) : "r"(addr));
 	return val;
 }
+#endif
 
 void uart8250_enable_rx_int();
 

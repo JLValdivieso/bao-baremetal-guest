@@ -43,6 +43,15 @@ SECTIONS {
         *(.sdata .sdata.* .sdata2.*)
     }
 
+	__cap_relocs : {
+     . = ALIGN(16);
+		 *(__cap_relocs)
+    }
+    .captable : {
+     . = ALIGN(16);
+		 *(.captable)
+    }
+
     .bss (NOLOAD) :  {	
         __bss_start = .;
         *(.bss* .sbss*) 
@@ -53,5 +62,7 @@ SECTIONS {
     . = ALIGN(16);
     PROVIDE(_stack_base = .);
     . = . + 2M; /* 2M of total stack size */
-    PROVIDE(_heap_base = .);
+    .heap : {
+        PROVIDE(_heap_base = .);
+    }
 }

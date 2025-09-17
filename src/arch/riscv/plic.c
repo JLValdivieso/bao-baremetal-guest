@@ -20,12 +20,16 @@
 
 #include <stdio.h>
 
+#ifdef __CHERI_PURE_CAPABILITY__
+#include <arch/cheri/cheri.h>
+#include <arch/cheri/cheri_utils.h>
+#endif
 #define PRIV_U  (0)
 #define PRIV_S  (1)
 #define PRIV_M  (3)
 
-volatile plic_global_t * plic_global = (void*) PLIC_BASE;
-volatile plic_hart_t *plic_hart = (void*) PLIC_HART_BASE;
+volatile plic_global_t *plic_global;
+volatile plic_hart_t *plic_hart;
 
 void plic_probe(){
     uint32_t *ptr =  (void*) plic_global->enbl;
@@ -42,6 +46,13 @@ static int plic_hartidpriv_to_context(int hartid, int mode){
 
 void plic_init(){
     int cntxt = plic_hartidpriv_to_context(get_cpuid(), PRIV_S);
+#if __CHERI_PURE_CAPABILITY__
+    plic_global = (volatile plic_global_t*) cheri_build_data_cap( (ptraddr_t) PLIC_BASE, sizeof(plic_global_t), CHERI_DEV_PERMS);
+    plic_hart = (volatile plic_hart_t*) cheri_build_data_cap( (ptraddr_t) PLIC_HART_BASE, sizeof(plic_hart_t) * PLIC_MAX_CONTEXTS, CHERI_DEV_PERMS);
+#else
+    plic_global = (void*) PLIC_BASE;
+    plic_hart = (void*) PLIC_HART_BASE;
+#endif
     plic_hart[cntxt].threshold = 0;
 }
 

@@ -30,28 +30,32 @@
 spinlock_t print_lock = SPINLOCK_INITVAL;
 
 void uart_rx_handler(){
-    printf("cpu%d: %s\n",get_cpuid(), __func__);
+    printf("cpu%lu: %s\n",get_cpuid(), __func__);
     uart_clear_rxirq();
 }
 
 void ipi_handler(){
-    printf("cpu%d: %s\n", get_cpuid(), __func__);
+    printf("cpu%lu: %s\n", get_cpuid(), __func__);
     irq_send_ipi(1ull << (get_cpuid() + 1));
 }
 
 void timer_handler(){
-    printf("cpu%d: %s\n", get_cpuid(), __func__);
+    printf("cpu%lu: %s\n", get_cpuid(), __func__);
     timer_set(TIMER_INTERVAL);
     irq_send_ipi(1ull << (get_cpuid() + 1));
 }
 
-void main(void){
+int main(void){
 
     static volatile bool master_done = false;
 
     if(cpu_is_master()){
         spin_lock(&print_lock);
+#ifdef __CHERI_PURE_CAPABILITY__
+        printf("Bao bare-metal test guest CHERI Pure Capability\n");
+#else
         printf("Bao bare-metal test guest\n");
+#endif
         spin_unlock(&print_lock);
 
         irq_set_handler(UART_IRQ_ID, uart_rx_handler);
@@ -74,7 +78,7 @@ void main(void){
 
     while(!master_done);
     spin_lock(&print_lock);
-    printf("cpu %d up\n", get_cpuid());
+    printf("cpu %lu up\n", get_cpuid());
     spin_unlock(&print_lock);
 
     while(1) wfi();

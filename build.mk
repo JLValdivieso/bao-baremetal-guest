@@ -6,9 +6,38 @@ objs:=$(C_SRC:$(ROOT_DIR)/%.c=$(BUILD_DIR)/%.o) \
 deps:=$(objs:%=%.d) $(gen_ld_file).d
 dirs:=$(sort $(dir $(objs) $(deps)))
 
-cc=$(CROSS_COMPILE)gcc
-objcopy=$(CROSS_COMPILE)objcopy
-objdump=$(CROSS_COMPILE)objdump
+SYSROOT:=/media/ninolomata/Nino1/CHERI/cheri_install/output/sdk/baremetal
+
+# Check cross compiler
+ifneq ($(findstring clang,$(CROSS_COMPILE)),)
+CC_IS_CLANG =	y
+else
+CC_IS_GCC =	y
+endif
+
+ifdef CC_IS_CLANG
+clang_version:=$(strip $(patsubst clang%, %, $(notdir $(CROSS_COMPILE))))
+clang_path:=$(dir $(wildcard $(abspath $(CROSS_COMPILE))))
+cpp=		$(clang_path)clang-cpp$(clang_version)
+sstrip= 	$(clang_path)llvm-strip$(clang_version)
+cc=			$(clang_path)clang$(clang_version)
+ld = 		$(clang_path)ld.lld$(clang_version)
+as=			$(clang_path)llvm-as$(clang_version)
+objcopy=	$(clang_path)llvm-objcopy$(clang_version)
+objdump=	$(clang_path)llvm-objdump$(clang_version)
+readelf=	$(clang_path)llvm-readelf$(clang_version)
+size=		$(clang_path)llvm-size$(clang_version)
+else
+cpp=		$(CROSS_COMPILE)cpp
+sstrip= 	$(CROSS_COMPILE)strip
+cc=			$(CROSS_COMPILE)gcc
+ld = 		$(CROSS_COMPILE)ld
+as=			$(CROSS_COMPILE)as
+objcopy=	$(CROSS_COMPILE)objcopy
+objdump=	$(CROSS_COMPILE)objdump
+readelf=	$(CROSS_COMPILE)readelf
+size=		$(CROSS_COMPILE)size
+endif
 
 OPT_LEVEL = 2
 DEBUG_LEVEL = 3
@@ -33,6 +62,11 @@ CPPFLAGS+=-DSINGLE_CORE=y
 endif
 ifneq ($(NO_FIRMWARE),)
 CPPFLAGS+=-DNO_FIRMWARE=y
+endif
+ifeq ($(CC_IS_GCC),y)
+	CPPFLAGS+=-DCC_IS_GCC
+else ifeq ($(CC_IS_CLANG),y)
+	CPPFLAGS+=-DCC_IS_CLANG
 endif
 ASFLAGS += $(GENERIC_FLAGS) $(CPPFLAGS) $(ARCH_ASFLAGS) 
 CFLAGS += $(GENERIC_FLAGS) $(CPPFLAGS) $(ARCH_CFLAGS) 

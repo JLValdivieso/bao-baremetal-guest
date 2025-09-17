@@ -11,6 +11,11 @@
 // #include <sbi_utils/serial/uart8250.h>
 #include <8250_uart.h>
 
+#ifdef __CHERI_PURE_CAPABILITY__
+#include <arch/cheri/cheri_utils.h>
+#include <arch/cheri/cheri.h>
+#endif
+
 /* clang-format off */
 
 #define UART_RBR_OFFSET		0	/* In:  Recieve Buffer Register */
@@ -96,7 +101,11 @@ int uart8250_init(unsigned long base, u32 in_freq, u32 baudrate, u32 reg_shift,
 {
 	u16 bdiv;
 
-	uart8250_base	   = (volatile void *)base;
+	#ifdef __CHERI_PURE_CAPABILITY__
+		uart8250_base = cheri_build_data_cap(base, 0x1000, CHERI_DEV_PERMS);
+	#else
+		uart8250_base	   = (volatile void *)base;
+	#endif
 	uart8250_reg_shift = reg_shift;
 	uart8250_reg_width = reg_width;
 	uart8250_in_freq   = in_freq;

@@ -61,7 +61,7 @@ typedef struct {
     uint8_t res[0x1000-0x0008];
 } plic_hart_t;
 
-extern volatile plic_global_t * plic_global;
+extern volatile plic_global_t *plic_global;
 extern volatile plic_hart_t *plic_hart;
 
 void plic_init();

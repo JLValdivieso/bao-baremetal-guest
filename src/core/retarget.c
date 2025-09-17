@@ -1,6 +1,7 @@
 
 
 #include <core.h>
+#include <plat.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,6 +13,13 @@
 #include <cpu.h>
 #include <fences.h>
 #include <wfi.h>
+
+#ifdef __CHERI_PURE_CAPABILITY__
+#include <arch/cheri/cheri.h>
+#include <arch/cheri/cheri_utils.h>
+#endif
+
+extern size_t _heap_base_sym;
 
 int _read(int file, char *ptr, int len)
 {
@@ -64,8 +72,11 @@ int _isatty(int fd)
 
 void* _sbrk(int increment)
 {
-    extern char _heap_base;
-    static char* heap_end = &_heap_base;
+#ifdef __CHERI_PURE_CAPABILITY__
+    char* heap_end = (char*) cheri_build_data_cap(_heap_base_sym, ((MEM_BASE + MEM_SIZE) - (size_t) _heap_base_sym), CHERI_DATA_PERMS);
+#else
+    static char* heap_end = (char*)_heap_base_sym;
+#endif
     char* current_heap_end = heap_end;
     heap_end += increment;
     return current_heap_end;
