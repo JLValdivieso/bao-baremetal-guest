@@ -6,8 +6,6 @@ objs:=$(C_SRC:$(ROOT_DIR)/%.c=$(BUILD_DIR)/%.o) \
 deps:=$(objs:%=%.d) $(gen_ld_file).d
 dirs:=$(sort $(dir $(objs) $(deps)))
 
-SYSROOT:=/media/ninolomata/Nino1/CHERI/cheri_install/output/sdk/baremetal
-
 # Check cross compiler
 ifneq ($(findstring clang,$(CROSS_COMPILE)),)
 CC_IS_CLANG =	y
