@@ -28,7 +28,7 @@
 #ifdef PLAT_PLIC_BASE
 #define PLIC_BASE   PLAT_PLIC_BASE
 #else
-#define PLIC_BASE   (0xc000000)
+#define PLIC_BASE   (0x04000000)
 #endif
 
 #define PLIC_HART_BASE   (PLIC_BASE+0x200000)

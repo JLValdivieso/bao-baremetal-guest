@@ -1,1 +1,1 @@
-src_c_srcs:= main_minimal.c
+src_c_srcs:= main.c
