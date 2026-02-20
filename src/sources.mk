@@ -1,1 +1,3 @@
-src_c_srcs:= main.c
+DEMO ?= demo1
+
+src_c_srcs := demos/$(DEMO)/main.c
