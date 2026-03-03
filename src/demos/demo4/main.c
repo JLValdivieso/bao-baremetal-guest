@@ -27,6 +27,9 @@ int main(){
     int a = 14;
     int b = 32;
 
+    for(volatile int i = 0; i < 10000000; i++){};
+
+    printf("========================================================================\r\n");
     printf("Hello BAO in a dual configuration\r\n");
     printf("This code is running in a baremetal guest environment with one core\r\n");
     printf("The following operations are performed:\r\n");
@@ -35,6 +38,7 @@ int main(){
     printf("The substraction is: %d\r\n", a - b);
     printf("The division is: %f\r\n", (float)a / b);
     printf("End of the test. \r\n");
+    printf("========================================================================\r\n");
     
     return 0;
 }
