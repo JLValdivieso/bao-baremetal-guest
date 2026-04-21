@@ -26,6 +26,8 @@
 #include <timer.h>
 
 #define TIMER_INTERVAL (TIME_S(1))
+/* Shared memory base address matching the config.c and Baremetal 1 */
+#define SHMEM_BASE 0x20000000
 
 spinlock_t print_lock = SPINLOCK_INITVAL;
 
@@ -67,6 +69,23 @@ void main(void){
         master_done = true;
     }
 
+    // Shared memory test
+    for(volatile int i = 0; i < 1000000; i++) asm("nop");
+    volatile char* shmem = (volatile char*)SHMEM_BASE;
+    /**
+     * POLLING: Busy-wait until the first byte is no longer null.
+     * This assumes Baremetal 1 clears the memory or starts the message with 'H'.
+     */
+    while(shmem[0] == '\0') {
+        /* Optional: assembly no-operation to prevent tight-loop overhead */
+        __asm__ volatile ("nop");
+    }
+    printf("[Baremetal 2] Message received: %s\n", (char*)shmem);
+    shmem[0] = '\0';
+    printf("[Baremetal 2] Memory cleared. Ready for next message.\n");
+    for(volatile int i = 0; i < 10000000; i++) asm("nop");
+
+    // Interrupt test
     irq_enable(UART_IRQ_ID);
     irq_set_prio(UART_IRQ_ID, IRQ_MAX_PRIO);
     irq_enable(IPI_IRQ_ID);

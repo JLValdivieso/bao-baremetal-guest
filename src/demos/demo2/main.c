@@ -26,6 +26,8 @@
 #include <timer.h>
 
 #define TIMER_INTERVAL (TIME_S(1))
+/* Shared memory base address as defined in the configuration file */
+#define SHMEM_BASE 0x20000000
 
 spinlock_t print_lock = SPINLOCK_INITVAL;
 
@@ -67,6 +69,19 @@ void main(void){
         master_done = true;
     }
 
+    // Shared memory test
+    printf("[Baremetal 1] Writing to shared memory\n");
+    volatile char* shmem = (volatile char*)SHMEM_BASE;
+    const char* msg = "Hello from Baremetal 1!";
+
+    // Manual copy for granular control over the memory region
+    for(int i = 0; msg[i] != '!'; i++) {
+        shmem[i] = msg[i];
+    }
+    printf("[Baremetal 1] Writing Done\n");
+    for(volatile int i = 0; i < 10000000; i++) asm("nop");
+    
+    // Interrupt test
     irq_enable(UART_IRQ_ID);
     irq_set_prio(UART_IRQ_ID, IRQ_MAX_PRIO);
     irq_enable(IPI_IRQ_ID);
